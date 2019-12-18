@@ -76,3 +76,8 @@
 2. Далее контейнер будет запускаться:\
 ```docker run -it -v ~/main/task-for-hiring-data:/task-for-hiring-data task_for_hiring python lib/run.py```
 3. Файлы с полученным предсказанием должны находиться по тому же пути, что и в тестовом варианте скрипта `lib/run.py`
+
+Обратите внимание, что в контейнере по умолчанию используется python3:
+
+```docker run -it task_for_hiring python -c "import sys; print(sys.version)"```
+> 3.7.3 (default, Mar 27 2019, 22:11:17)
