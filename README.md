@@ -81,3 +81,7 @@
 
 ```docker run -it task_for_hiring python -c "import sys; print(sys.version)"```
 > 3.7.3 (default, Mar 27 2019, 22:11:17)
+
+# Baseline
+
+Текущий бэйзлайн, который надо побить для первой части - 0.9.
