@@ -101,9 +101,15 @@ le_subcat = LabelEncoder()
 data.subcategory = le_subcat.fit_transform(data.subcategory)
 le_cat = LabelEncoder()
 data.category = le_cat.fit_transform(data.category)
+
 le_region = LabelEncoder()
-data.region = le_region.fit_transform(data.region)
+le_region.fit(pd.concat([data.region, data_test.region], axis=0))
+data.region = le_region.transform(data.region)
+
 le_city = LabelEncoder()
+le_city.fit(pd.concat([data.city, data_test.city], axis=0))
+data.city = le_city.transform(data.city)
+
 
 data.city = le_city.fit_transform(data.city)
 data_test.subcategory = le_subcat.transform(data_test.subcategory)
