@@ -92,9 +92,9 @@ def preproc(df):
     
     return df
 
-data = final.pipe(create_features)
+data = data.pipe(create_features)
 data_test = data_test.pipe(create_features)
-data = final.pipe(preproc)
+data = data.pipe(preproc)
 data_test = data_test.pipe(preproc)
 
 le_subcat = LabelEncoder()
