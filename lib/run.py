@@ -124,15 +124,15 @@ description_tf_idf_data_svd = pd.DataFrame(svd.fit_transform(description_tf_idf_
 description_tf_idf_data_test = TF_IDF.transform(data_test.description_title)
 description_tf_idf_data_test_svd = pd.DataFrame(svd.transform(description_tf_idf_data_test))
 
-X = pd.concat([data, description_tf_idf_data_svd], axis=1)
-X_test = pd.concat([data_test, description_tf_idf_data_test_svd], axis=1)
+X = pd.concat([data, description_tf_idf_data_svd], axis=1, ignore_index=True)
+X_test = pd.concat([data_test, description_tf_idf_data_test_svd], axis=1, ignore_index=True)
 
 IF = IsolationForest(n_jobs=-1, n_estimators=140)
 IF.fit(X.drop(["description_title"], axis=1))
 X_weights = IF.predict(X.drop(["description_title"], axis=1))
 X_weights = pd.Series(np.where(X_weights == 1, 1, 0))
 
-clf_rf = RandomForestClassifier(n_estimators = 130, n_jobs=-1, )
+clf_rf = RandomForestClassifier(n_estimators = 130, n_jobs=-1)
 clf_rf.fit(X.drop(["description_title", "is_bad"], axis=1), X["is_bad"], sample_weight=X_weights)
 
 prediction = clf_rf.predict_proba(X_test.drop(["description_title", "is_bad"], axis=1))[:,1]
