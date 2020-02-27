@@ -46,7 +46,7 @@ def create_features(df):
     # df["description_qunt_of_unique"] = data.description.apply(lambda x: len(set(x)))
     df["title_quant_of_numb"] = df.title.apply(lambda x: len(re.findall(r"\d", x)))
     df["title_len"] = df.title.apply(lambda x: len(x))
-    df["title_qunt_of_unique"] = data.title.apply(lambda x: len(set(x)))
+    df["title_qunt_of_unique"] = df.title.apply(lambda x: len(set(x)))
     df["title_quant_of_7"] = df.title.apply(lambda x: x.count("7"))
     df["title_quant_of_8"] = df.title.apply(lambda x: x.count("8"))
     df["title_quant_of_9"] = df.title.apply(lambda x: x.count("9"))
