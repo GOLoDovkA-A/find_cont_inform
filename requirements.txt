@@ -18,3 +18,5 @@ string.punctuation
 tqdm.tqdm
 sklearn.decomposition.TruncatedSVD
 csv
+sklearn.preprocessing.OrdinalEncoder
+sklearn.pipeline.Pipeline
