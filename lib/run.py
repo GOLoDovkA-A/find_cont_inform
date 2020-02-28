@@ -1,6 +1,6 @@
-fp_train = '/content/drive/My Drive/contact_inform/train.csv'
-fp_val = '/content/drive/My Drive/contact_inform/val.csv'
-fp_test = '/content/drive/My Drive/contact_inform/val.csv'
+fp_train = '/task-for-hiring-data/train.csv'
+fp_val = '/task-for-hiring-data/val.csv'
+fp_test = '/task-for-hiring-data/test_data.csv'
 
 import numpy as np
 import pandas as pd
