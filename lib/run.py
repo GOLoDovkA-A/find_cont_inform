@@ -1,6 +1,6 @@
-fp_train = '/task-for-hiring-data/train.csv'
-fp_val = '/task-for-hiring-data/val.csv'
-fp_test = '/task-for-hiring-data/test_data.csv'
+fp_train = '/content/drive/My Drive/contact_inform/train.csv'
+fp_val = '/content/drive/My Drive/contact_inform/val.csv'
+fp_test = '/content/drive/My Drive/contact_inform/val.csv'
 
 import numpy as np
 import pandas as pd
@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import datetime, time
 import re
 import nltk
+import csv
 
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
@@ -23,18 +24,19 @@ from pymystem3 import Mystem
 from string import punctuation
 from tqdm import tqdm
 from sklearn.decomposition import TruncatedSVD
-import csv
+from sklearn.preprocessing import OrdinalEncoder
+from sklearn.pipeline import Pipeline
 
+russian_stopwords = ['и','в','во','не','что','он','на','я','с','со','как','а','то','все','она','так','его','но','да','ты','к','у','же','вы','за','бы','по','только','ее','мне','было','вот','от','меня','еще','нет','о','из','ему','теперь','когда','даже','ну','вдруг','ли','если','уже','или','ни','быть','был','него','до','вас','нибудь','опять','уж','вам','ведь','там','потом','себя','ничего','ей','может','они','тут','где','есть','надо','ней','для','мы','тебя','их','чем','была','сам','чтоб','без','будто','чего','раз','тоже','себе','под','будет','ж','тогда','кто','этот','того','потому','этого','какой','совсем','ним','здесь','этом','один','почти','мой','тем','чтобы','нее','сейчас','были','куда','зачем','всех','никогда','можно','при','наконец','два','об','другой','хоть','после','над','больше','тот','через','эти','нас','про','всего','них','какая','много','разве','три','эту','моя','впрочем','хорошо','свою','этой','перед','иногда','лучше','чуть','том','нельзя','такой','им','более','всегда','конечно','всю','между']
 cfg = dict(parse_dates=['datetime_submitted'])
 
 train = pd.read_csv(fp_train, **cfg)
 val = pd.read_csv(fp_val, **cfg)
-
-data = pd.concat([train, val], axis=0)
+data = pd.concat([train, val], axis=0, ignore_index=True)
 data_test = pd.read_csv(fp_test, **cfg)
 
-def create_features(df):
-    
+def create_features_and_preproc(df):
+  
     hour = df['datetime_submitted'].dt.hour
     df['hour_sin'] = np.sin(2 * np.pi * hour / 24)
     df['hour_cos'] = np.cos(2 * np.pi * hour / 24)
@@ -50,8 +52,6 @@ def create_features(df):
     df["title_quant_of_7"] = df.title.apply(lambda x: x.count("7"))
     df["title_quant_of_8"] = df.title.apply(lambda x: x.count("8"))
     df["title_quant_of_9"] = df.title.apply(lambda x: x.count("9"))
-
-
     regex_phone = r"([8-9]\d{7,10})|(\+7\d{7,10})|((\d.){8,11})|(\+7 \d{3})|(8[(-]\d{3})|(89 )|([8-9] \d)"
     regex_mess = r"(vk.com)|(Discord)|(What's app)|(Whats app)|(Whatsapp)|(вотсап)|(вацап)|(viber)|(вайбер)"
     regex_email = r"(http)|(@mail)|(@yandex)|(@yahoo)|(@gmail)|(@ya)|(@list)|(@bk)|(@outlook)"
@@ -67,10 +67,8 @@ def create_features(df):
                         contains(regex_email).fillna(False)]
     df["regex_mess_true_title"] = [1 if i==True else 0 for i in df.title.str. \
                         contains(regex_phone).fillna(False)]
-    return df
 
-def preproc(df):
-    
+
     df["description_title"] = df.title + df.description
     df = df.drop(["title", "description","datetime_submitted"], axis=1)
     
@@ -92,47 +90,15 @@ def preproc(df):
     
     return df
 
-data = data.pipe(create_features)
-data_test = data_test.pipe(create_features)
-data = data.pipe(preproc)
-data_test = data_test.pipe(preproc)
-
-le_subcat = LabelEncoder()
-data.subcategory = le_subcat.fit_transform(data.subcategory)
-le_cat = LabelEncoder()
-data.category = le_cat.fit_transform(data.category)
-
-le_region = LabelEncoder()
-le_region.fit(pd.concat([data.region, data_test.region], axis=0))
-data.region = le_region.transform(data.region)
-
-le_city = LabelEncoder()
-le_city.fit(pd.concat([data.city, data_test.city], axis=0))
-data.city = le_city.transform(data.city)
-
-
-data.city = le_city.fit_transform(data.city)
-data_test.subcategory = le_subcat.transform(data_test.subcategory)
-data_test.category = le_cat.transform(data_test.category)
-data_test.region = le_region.transform(data_test.region)
-data_test.city = le_city.transform(data_test.city)
-
-russian_stopwords = ['и','в','во','не','что','он','на','я','с','со','как','а','то','все','она','так','его','но','да','ты','к','у','же','вы','за','бы','по','только','ее','мне','было','вот','от','меня','еще','нет','о','из','ему','теперь','когда','даже','ну','вдруг','ли','если','уже','или','ни','быть','был','него','до','вас','нибудь','опять','уж','вам','ведь','там','потом','себя','ничего','ей','может','они','тут','где','есть','надо','ней','для','мы','тебя','их','чем','была','сам','чтоб','без','будто','чего','раз','тоже','себе','под','будет','ж','тогда','кто','этот','того','потому','этого','какой','совсем','ним','здесь','этом','один','почти','мой','тем','чтобы','нее','сейчас','были','куда','зачем','всех','никогда','можно','при','наконец','два','об','другой','хоть','после','над','больше','тот','через','эти','нас','про','всего','них','какая','много','разве','три','эту','моя','впрочем','хорошо','свою','этой','перед','иногда','лучше','чуть','том','нельзя','такой','им','более','всегда','конечно','всю','между']
-
-TF_IDF = TfidfVectorizer(max_df=0.5, min_df=0.0001,
+data = data.pipe(create_features_and_preproc)
+enc = OrdinalEncoder()
+data[["category", "subcategory", "region", "city"]] = enc.fit_transform(data[["category", "subcategory", "region", "city"]])
+tf_idf = TfidfVectorizer(max_df=0.5, min_df=0.0001,
                      stop_words=russian_stopwords)
-TF_IDF.fit(data.description_title)
-description_tf_idf_data = TF_IDF.transform(data.description_title)
-
+description_tf_idf_data = tf_idf.fit_transform(data.description_title)
 svd = TruncatedSVD(n_components=40)
-description_tf_idf_data_svd = pd.DataFrame(svd.fit_transform(description_tf_idf_data))
-
-description_tf_idf_data_test = TF_IDF.transform(data_test.description_title)
-description_tf_idf_data_test_svd = pd.DataFrame(svd.transform(description_tf_idf_data_test))
-
-X = pd.concat([data, description_tf_idf_data_svd], axis=1, ignore_index=True)
-X_test = pd.concat([data_test, description_tf_idf_data_test_svd], axis=1, ignore_index=True)
-
+description_tf_idf_data_svd = pd.DataFrame(svd.fit_transform(description_tf_idf_data), index=data.index)
+X = pd.concat([data, description_tf_idf_data_svd], axis=1)
 IF = IsolationForest(n_jobs=-1, n_estimators=140)
 IF.fit(X.drop(["description_title"], axis=1))
 X_weights = IF.predict(X.drop(["description_title"], axis=1))
@@ -141,10 +107,14 @@ X_weights = pd.Series(np.where(X_weights == 1, 1, 0))
 clf_rf = RandomForestClassifier(n_estimators = 130, n_jobs=-1)
 clf_rf.fit(X.drop(["description_title", "is_bad"], axis=1), X["is_bad"], sample_weight=X_weights)
 
-prediction = clf_rf.predict_proba(X_test.drop(["description_title", "is_bad"], axis=1))[:,1]
+data_test = data_test.pipe(create_features_and_preproc)
+data_test[["category", "subcategory", "region", "city"]] = enc.transform(data_test[["category", "subcategory", "region", "city"]])
+description_tf_idf_data_test = tf_idf.transform(data_test.description_title)
+description_tf_idf_data_test_svd = pd.DataFrame(svd.transform(description_tf_idf_data_test), index=data_test.index)
+X_test = pd.concat([data_test, description_tf_idf_data_test_svd], axis=1)
 
-prediction = pd.Series(prediction)
+prediction = pd.Series(clf_rf.predict_proba(X_test.drop(["description_title", "is_bad"], axis=1))[:,1])
 index = pd.Series(range(0,len(prediction)))
 target_prediction = pd.DataFrame({"index":index, "prediction":prediction})
 
-target_prediction.to_csv("/task-for-hiring-data/target_prediction.csv", sep='\t', encoding='utf-8')
+target_prediction.to_csv("/task-for-hiring-data/target_prediction.csv", encoding='utf-8')
