@@ -4,8 +4,6 @@ fp_test = '/task-for-hiring-data/test_data.csv'
 
 import numpy as np
 import pandas as pd
-import xgboost as xgb
-import matplotlib.pyplot as plt
 import datetime, time
 import re
 import nltk
@@ -15,8 +13,6 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import  IsolationForest
-from sklearn.model_selection import GridSearchCV
-from sklearn.metrics import roc_auc_score
 from sklearn.feature_extraction.text import TfidfVectorizer
 from scipy import sparse
 from nltk.corpus import stopwords
@@ -117,4 +113,4 @@ prediction = pd.Series(clf_rf.predict_proba(X_test.drop(["description_title", "i
 index = pd.Series(range(0,len(prediction)))
 target_prediction = pd.DataFrame({"index":index, "prediction":prediction})
 
-target_prediction.to_csv("/task-for-hiring-data/target_prediction.csv", encoding='utf-8')
+target_prediction.to_csv("/task-for-hiring-data/target_prediction.csv", encoding='utf-8', index=False)
